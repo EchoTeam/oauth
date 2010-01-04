@@ -1,0 +1,9 @@
+{application, oauth,
+ [ {description, "OAuth implementation"},
+   {vsn, "0.1"},
+   {modules, [ MODULES ] },
+   {registered, [oauth_nonce]},
+   {applications, [kernel, stdlib, sasl]},
+   {mod, {oauth_app, []}}
+ ]
+}.

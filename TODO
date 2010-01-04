@@ -1,0 +1,8 @@
+S: support RSA-SHA1
+S: WWW-Authenticate when needed
+S: handle Authorization: header
+S: when signature check fails, provide more diagnostics.
+S: test with SSL
+S: the supervisor modules should be a callback as well
+C: google claims "no oauth parameters" when making a 'post' request with
+   get_request_token.
