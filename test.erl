@@ -1,33 +1,60 @@
-%
-% Copyright (c) 2008-2009 Jacknyfe, Inc., http://jacknyfe.net.
-% All rights reserved.
-% 
-% Redistribution and use in source and binary forms, with or without 
-% modification, are permitted provided that the following conditions are met:
-% 
-%  * Redistributions of source code must retain the above copyright notice,
-%    this list of conditions and the following disclaimer.
-%  * Redistributions in binary form must reproduce the above copyright notice, 
-%    this list of conditions and the following disclaimer in the documentation 
-%    and/or other materials provided with the distribution.
-% 
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-
 -module(test).
 -compile(export_all).
 
 run() ->
+  [application:start(X) || X <- [crypto, inets, ssl]],
+
+  {ok, Nonce} = nonce:start_link(),
+
+  {ok, [Info]} = public_key:pem_to_der("./test_rsa"),
+  {ok, PrivateKey} = public_key:decode_private_key(Info),
+
+  BaseURL = "http://tiger.xiolabs.com:9006/api",
+
+  [
+    begin
+      C = oauthclient:new([
+        {access_token_api, {post, BaseURL ++ "/AccessToken"}},
+        {authorization_url,
+          {BaseURL ++ "/Authorize", [tXXXoken_optional, cXXXallback_optional],
+            []}},
+        {callback_url, "http://consumer.example.org/authorized?a=b"},
+        {nonce_server, Nonce},
+        {consumer_key, "dpf43f3p2l4k3l03"},
+        {consumer_secret, "kd94hf93k423kf44"},
+        {private_key, PrivateKey},
+        {request_token_api, {post, BaseURL ++ "/RequestToken"}},
+        {signature_method, SignMethod}
+      ]),
+
+      AppParams = [
+        {"b", "1"},
+        {"a", "2"},
+        {"a", "1"},
+        {"and this", "one is @#$%^ cool"}
+      ],
+
+      {C2, {ok, _}} = oauthclient:get_request_token(C, AppParams),
+      {C3, {ok, AuthorizationURL}} = oauthclient:mk_authorization_url(C2),
+
+      io:format("~s~n", [AuthorizationURL]),
+
+      {C4, {ok, _}} = oauthclient:get_access_token(C3),
+
+      AccessURL = BaseURL ++ "/Access",
+
+      {_C5, {ok, {URL, Headers, ContentType, Body}}} =
+        oauthclient:mk_access_request(
+          C4, post, with_rest, AccessURL, [{"k", "v"}, {"x", "y"}]
+        ),
+
+      Response = http:request(post, {URL, Headers, ContentType, Body}, [], []),
+
+      io:format("Response (~s): ~p~n", [SignMethod, Response])
+    end
+    || SignMethod <- [plaintext, hmac_sha1, rsa_sha1]
+  ],
+
   %
   % XXX: Unit testing, ugly. :-) Should be somewhere else.
   %
@@ -142,8 +169,8 @@ google() ->
     {callback_url, "oob"},
     {debug_output, [http_requests]},
     {nonce_server, Nonce},
-    {consumer_key, "google consumer key"},
-    {consumer_secret, "google consumer secret"},
+    {consumer_key, "vss.73rus.com"},
+    {consumer_secret, "Y6c+cbDHNLpZCW5FGU0UyAKQ"},
     {request_token_api, {get, BaseURL ++ "GetRequestToken"}},
     {signature_method, hmac_sha1}
   ],
@@ -188,6 +215,44 @@ google() ->
       end
     ]
   ).
+
+%%
+
+state_dump() ->
+  [application:start(X) || X <- [crypto, inets, ssl]],
+
+  [
+    begin
+      C = oauthclient:reinstantiate(
+        termie_config(SignatureMethod), binary_to_term(Dump)
+      ),
+
+      R = termie_make_request(C, "http://term.ie/oauth/example/echo_api.php",
+        [{"method", atom_to_list(SignatureMethod)}]),
+
+      io:format("state_dump: ~p~n", [R])
+    end
+    || {Dump, SignatureMethod} <-
+    [
+      {
+        <<131,104,5,97,0,100,0,9,117,110,100,101,102,105,110,101,
+        100,100,0,17,104,97,118,101,95,97,99,99,101,115,115,95,
+        116,111,107,101,110,107,0,9,97,99,99,101,115,115,107,
+        101,121,107,0,12,97,99,99,101,115,115,115,101,99,114,
+        101,116>>,
+        hmac_sha1
+      },
+
+      {
+        <<131,104,5,97,0,100,0,9,117,110,100,101,102,105,110,101,
+        100,100,0,17,104,97,118,101,95,97,99,99,101,115,115,95,
+        116,111,107,101,110,107,0,9,97,99,99,101,115,115,107,
+        101,121,107,0,12,97,99,99,101,115,115,115,101,99,114,
+        101,116>>,
+        plaintext
+      }
+    ]
+  ].
 
 %%
 

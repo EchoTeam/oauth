@@ -1,3 +1,6 @@
 *~
 *.beam
+*.swp
+erl_crash.dump
 oauth.app
+oauthserver.app
