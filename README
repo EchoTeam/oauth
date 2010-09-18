@@ -1,7 +1,18 @@
-Erlang implementation of OAuth client by JS-Kit
+Erlang implementation of OAuth client and server by Echo
 
-Copyright (c) 2008-2009 Jacknyfe, Inc. All rights reserved.
+Copyright (c) 2008-2010 Jacknyfe, Inc. All rights reserved.
 
-This client is interoperable with OAuth 1.0 and 1.0a servers.
+Client
+======
+
+The client is interoperable with OAuth 1.0 and 1.0a servers.
 
 For documentation and samples please check out oauthclient.erl and test.erl.
+
+
+Server
+======
+
+The server conforms to OAuth 1.0 spec.
+
+Check out demo/ directory for a sample server.
