@@ -39,9 +39,6 @@
 	% dependency listing.
 	{applications, [crypto]},
 
-	% Applications to be *loaded* before starting the application.
-	{included_applications, [yaws]},
-
 	{mod, {oauthserver_app, []}},
 
 	{env,
@@ -49,8 +46,8 @@
 			{doc_root,		"/tmp/empty"},
 			{ip,			{0, 0, 0, 0}},
 			{callback_module,	{dummy_server, unused_arg}},
-			{port,			9006},
-			{server_name,		"tiger.xiolabs.com"}
+			{port,			8115},
+			{server_name,		"will be overridden by config"}
 		]
 	}
 ]}.
