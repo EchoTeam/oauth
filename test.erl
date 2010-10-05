@@ -9,16 +9,14 @@ run() ->
   {ok, [Info]} = public_key:pem_to_der("./test_rsa"),
   {ok, PrivateKey} = public_key:decode_private_key(Info),
 
-  BaseURL = "http://tiger.xiolabs.com:9006/api",
+  BaseURL = "http://localhost:8115/api",
 
   [
     begin
       C = oauthclient:new([
         {access_token_api, {post, BaseURL ++ "/AccessToken"}},
-        {authorization_url,
-          {BaseURL ++ "/Authorize", [tXXXoken_optional, cXXXallback_optional],
-            []}},
-        {callback_url, "http://consumer.example.org/authorized?a=b"},
+        {authorization_url, {BaseURL ++ "/Authorize", [], []}},
+        {callback_url, "oob"},
         {nonce_server, Nonce},
         {consumer_key, "dpf43f3p2l4k3l03"},
         {consumer_secret, "kd94hf93k423kf44"},
@@ -39,27 +37,30 @@ run() ->
 
       io:format("~s~n", [AuthorizationURL]),
 
-      {C4, {ok, _}} = oauthclient:get_access_token(C3),
+      {C4, ok} = oauthclient:authorization_completed(C3, "verifier"),
+      {C5, {ok, _}} = oauthclient:get_access_token(C4),
 
       AccessURL = BaseURL ++ "/Access",
 
-      {_C5, {ok, {URL, Headers, ContentType, Body}}} =
+      {_C6, {ok, {URL, Headers, ContentType, Body}}} =
         oauthclient:mk_access_request(
-          C4, post, with_rest, AccessURL, [{"k", "v"}, {"x", "y"}]
+          C5, post, with_rest, AccessURL, [{"k", "v"}, {"x", "y"}]
         ),
 
       Response = http:request(post, {URL, Headers, ContentType, Body}, [], []),
 
       io:format("Response (~s): ~p~n", [SignMethod, Response])
     end
-    || SignMethod <- [plaintext, hmac_sha1, rsa_sha1]
+
+    %  rsa_sha1 is not supported by the bundled server
+    || SignMethod <- [plaintext, hmac_sha1]
   ],
 
   %
   % XXX: Unit testing, ugly. :-) Should be somewhere else.
   %
 
-  {error, missing_parameter, consumer_secret, _} = 
+  {error, missing_parameter, endpoint, _} = 
     oauth:generate_signature(hmac_sha1, []),
 
   {ok, "HMAC-SHA1", "tR3+Ty81lMeYAr/Fid0kMTYa/WM=", _} =
