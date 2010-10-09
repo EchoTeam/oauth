@@ -1,0 +1,12 @@
+This is demo server (built on top of the Echo OAuth server framework) and a
+client to test that.
+
+To run:
+
+1. Replace 'CHANGE.THIS.NOW' with the host name where the server will run in
+files sample.config and client.erl.
+
+2. Run `make run-server` to start the server.
+
+3. Run `make run-client` to start the client. It will print an authorization
+URL to follow.
