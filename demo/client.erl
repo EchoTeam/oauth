@@ -37,7 +37,8 @@ run() ->
   C = oauthclient:new([
     {access_token_api, {post, BaseURL ++ "/AccessToken"}},
     {authorization_url,
-      {BaseURL ++ "/Authorize", [callback_optional], []}},
+      {BaseURL ++ "/Authorize", [], []}},
+    {callback_url, "oob"},
     {nonce_server, Nonce},
     {consumer_key, "consumer_key"},
     {consumer_secret, "consumer_secret"},
@@ -52,15 +53,18 @@ run() ->
 
   io:format("~s~n", [AuthorizationURL]),
 
-  timer:sleep(10000),
+  timer:sleep(15000),
 
-  {C4, {ok, _}} = oauthclient:get_access_token(C3),
+  {C4, ok} =
+    oauthclient:authorization_completed(C3, "no verifier for 1.0 server"),
+
+  {C5, {ok, _}} = oauthclient:get_access_token(C4),
 
   AccessURL = BaseURL ++ "/Access",
 
-  {_C5, {ok, {URL, Headers, ContentType, Body}}} =
+  {_C6, {ok, {URL, Headers, ContentType, Body}}} =
     oauthclient:mk_access_request(
-      C4, post, with_rest, AccessURL, [ResourceParam]
+      C5, post, with_rest, AccessURL, [ResourceParam]
     ),
 
   Response = http:request(post, {URL, Headers, ContentType, Body}, [], []),
