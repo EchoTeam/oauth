@@ -145,7 +145,7 @@ char_percent_encoding($_ = X) -> X;
 char_percent_encoding($. = X) -> X;
 char_percent_encoding($- = X) -> X;
 char_percent_encoding($~ = X) -> X;
-char_percent_encoding(X) -> io_lib:format("%~.16B", [X]).
+char_percent_encoding(X) -> io_lib:format("%~2.16.0B", [X]).
  
 %%
 
