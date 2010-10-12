@@ -1,7 +1,7 @@
 %
 % Nonce server
 %
-% Copyright (c) 2008-2009 Jacknyfe, Inc., http://jacknyfe.net.
+% Copyright (c) 2008-2010 Jacknyfe, Inc. (dba Echo), http://aboutecho.com.
 % All rights reserved.
 % 
 % Redistribution and use in source and binary forms, with or without 
