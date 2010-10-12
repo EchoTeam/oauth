@@ -16,3 +16,10 @@ Server
 The server conforms to OAuth 1.0 spec.
 
 Check out demo/ directory for a sample server.
+
+
+dummy_server
+============
+
+The dummy server (dummy_server.erl) is basically a stub server (started by
+`make run`) used for testing the client (test:run()).
