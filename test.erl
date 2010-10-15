@@ -1,3 +1,8 @@
+%
+% Copyright (c) 2008, 2009, 2010 JackNyfe, Inc. (dba Echo) http://aboutecho.com/
+% See the accompanying LICENSE file.
+%
+
 -module(test).
 -compile(export_all).
 
