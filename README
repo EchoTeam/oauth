@@ -23,3 +23,9 @@ dummy_server
 
 The dummy server (dummy_server.erl) is basically a stub server (started by
 `make run`) used for testing the client (test:run()).
+
+Build procedure
+===============
+
+The code is built with BSD make. Make sure that YAWS_EBIN in the Makefile
+points to the location where Yaws beams reside.
