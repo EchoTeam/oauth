@@ -48,7 +48,8 @@ code_change(_OldVsn, State, _Extra) ->
 
 handle_call({get_ts_nonce}, _From, {_LastTs, N}) ->
   Ts = get_ts(),
-  {reply, {Ts, "jskitnonce" ++ integer_to_list(N)}, {Ts, N + 1}};
+  Nonce = "jskitnonce" ++ "-" ++ integer_to_list(erlang:phash2(make_ref())),
+  {reply, {Ts, Nonce}, {Ts, N + 1}};
 
 handle_call(_Request, _From, State) ->
   {noreply, State}.
